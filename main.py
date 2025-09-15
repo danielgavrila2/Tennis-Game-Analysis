@@ -144,9 +144,9 @@ def main():
     # Draw the graphical court
     output_video_frames = graphical_court.draw_court_bg(output_video_frames)
     output_video_frames = graphical_court.draw_points_on_graphical_court(
-        output_video_frames, player_graph_court_detections)
+        output_video_frames, player_graph_court_detections, color=(0, 255, 0))
     output_video_frames = graphical_court.draw_points_on_graphical_court(
-        output_video_frames, ball_graph_court_detections, color=(0, 0, 255))
+        output_video_frames, ball_graph_court_detections, color=(0, 255, 255))
 
     # Draw player stats
     output_video_frames = draw_player_stats(

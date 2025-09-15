@@ -294,7 +294,7 @@ class GraphicalCourt:
 
         return output_player_bb, output_ball_bb
 
-    def draw_points_on_graphical_court(self, frames, positions, color=(0, 255, 0)):
+    def draw_points_on_graphical_court(self, frames, positions, color=(255, 0, 0)):
         for frame_id, frame in enumerate(frames):
             for _, pos in positions[frame_id].items():
                 x, y = pos
