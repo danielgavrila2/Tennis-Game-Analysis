@@ -21,10 +21,9 @@ By combining **object detection, tracking, and trajectory analysis**, this syste
 Here’s what the AI-powered tennis ball detection looks like in action:  
 
 <p align="center">
-  <img src="assets/output.gif" alt="Tennis Ball Detection Example" width="600"/>
+  <img src="output_videos/example-gif.gif" alt="Tennis Ball Detection Example" width="600"/>
 </p>  
 
-*(Output video transformed into GIF for demonstration.)*
 
 ---
 
@@ -50,21 +49,63 @@ We used the **Tennis Ball Detection Dataset** from [Roboflow](https://universe.r
 
 ## 🧠 How the AI Works  
 
-This project is powered by **Deep Neural Networks (DNNs)**, specifically using an **object detection model** such as YOLOv5/YOLOv8.  
+This project leverages **Deep Learning** and **Computer Vision** to detect and track tennis balls in real-time. At its core, it uses a **Convolutional Neural Network (CNN)** based object detection model (like YOLOv5/YOLOv8) combined with tracking algorithms for trajectory analysis.  
 
-### Key Steps:
-1. **Input Frames** → Extracted from a tennis video.  
-2. **Convolutional Neural Network (CNN)** → Detects bounding boxes for tennis balls.  
-3. **Feature Extraction Layers** → Convolutions, pooling, and normalization extract meaningful spatial features.  
-4. **Detection Head** → Outputs bounding boxes + confidence scores.  
-5. **Tracking Module** → Links detections across frames for smooth ball trajectory.  
-6. **Analysis** → Speed, trajectory curves, and gameplay stats are derived.  
+### 🔹 Data Flow Overview  
 
-### Neural Network Architecture (simplified):
-- **Input Layer**: Raw video frames.  
-- **Conv Layers**: Detect patterns (edges, shapes, textures).  
-- **Deep Layers**: Learn higher-level features (ball size, shape, motion).  
-- **Output Layer**: Bounding boxes with confidence scores.  
+1. **Video Input**  
+   - Raw tennis match footage is split into frames.  
+   - Each frame is preprocessed: resized, normalized, and augmented to improve model robustness.  
+
+2. **Feature Extraction (Convolutional Layers)**  
+   - The CNN applies **convolutional filters** to extract spatial features: edges, corners, textures.  
+   - Multiple layers allow the network to learn **hierarchical representations**:  
+     - Early layers detect simple features (edges, color gradients).  
+     - Mid layers detect shapes and textures (tennis ball contours).  
+     - Deep layers detect higher-level concepts (ball in motion, occlusions).  
+
+   ![Convolutional Layers](https://miro.medium.com/v2/resize:fit:1200/1*tCGkL3vJ3-zp9K1oCmFhIA.png)      
+   *Illustration of convolutional layers extracting features from an input frame.*
+
+3. **Detection Head**  
+   - After feature extraction, the **detection head** predicts bounding boxes and confidence scores.  
+   - YOLO divides the image into grids and predicts object locations and probabilities per grid cell.  
+
+   ![YOLO Detection Head](https://user-images.githubusercontent.com/65339139/253833314-26fc3681-358d-4c09-a841-7db328fabf6c.png)  
+   *How YOLO predicts bounding boxes and confidence scores from feature maps.*
+
+4. **Non-Maximum Suppression (NMS)**  
+   - Eliminates overlapping predictions to keep only the most confident bounding box per detected ball.  
+
+5. **Tracking Across Frames**  
+   - Uses algorithms like **SORT** or **DeepSORT** to link detected balls across consecutive frames.  
+   - Ensures smooth trajectory even when the ball is temporarily occluded.  
+
+   ![Tracking Diagram](https://miro.medium.com/v2/resize:fit:1400/0*-S2EkuGhkP9tp9It.JPG)  
+   *Tracking module connecting ball positions across frames.*
+
+6. **Trajectory and Speed Analysis**  
+   - Extracts the path of the ball over time.  
+   - Computes metrics such as speed, bounce points, and shot angles.  
+   - This provides valuable game insights for coaches and players.  
+
+### 🔹 Neural Network Architecture (Detailed)  
+
+| Layer Type           | Purpose                                                                 |
+|----------------------|-------------------------------------------------------------------------|
+| Input Layer           | Receives raw frames (H×W×3).                                           |
+| Convolution + ReLU    | Detects local patterns (edges, corners).                                |
+| Max Pooling           | Reduces spatial dimensions while preserving important features.         |
+| Residual/Backbone     | Deep layers (e.g., CSPDarknet in YOLOv5) extract higher-level features.|
+| Detection Layer       | Outputs bounding boxes, class probabilities, and confidence scores.     |
+| Post-processing (NMS) | Filters redundant boxes, keeps the best predictions.                    |
+
+   ![Model Architecture](assets/model_architecture.png)  
+   *Full CNN + detection architecture showing flow from input frame to output bounding boxes.*
+
+This layered design allows the model to **accurately detect small, fast-moving objects** like tennis balls, even in challenging lighting or when partially occluded by players.  
+
+---
 
 ---
 
@@ -143,7 +184,6 @@ python analyze.py --input input_video.mp4 --output output_video.mp4
 
 ## 🔮 Future Improvements  
 
-- Add **player detection & tracking**.  
 - Include **racket-ball interaction analysis**.  
 - Build a **dashboard with live match stats**.  
 - Extend dataset with more diverse match conditions.  
