@@ -34,6 +34,13 @@ def main():
     player_detections = player_tracker.filter_players(
         court_keypoints, player_detections)
 
+    # Initialize graphical court
+    graphical_court = GraphicalCourt(video_frames[0])
+
+    # Convert positions to graphical court coordinates
+    player_graph_court_detections, ball_graph_court_detections = graphical_court.convert_bounding_boxes_to_graphical_court_coord(
+        player_detections, ball_detections, court_keypoints)
+
     # Draw the bounding boxes on the frames
     output_video_frames = player_tracker.draw_boxes(
         video_frames, player_detections)
@@ -43,9 +50,11 @@ def main():
         output_video_frames, court_keypoints)
 
     # Draw the graphical court
-    graphical_court = GraphicalCourt(output_video_frames[0])
-
     output_video_frames = graphical_court.draw_court_bg(output_video_frames)
+    output_video_frames = graphical_court.draw_points_on_graphical_court(
+        output_video_frames, player_graph_court_detections)
+    output_video_frames = graphical_court.draw_points_on_graphical_court(
+        output_video_frames, ball_graph_court_detections, color=(0, 0, 255))
 
     # We will display the frame number on each frame
     for i, frame in enumerate(video_frames):

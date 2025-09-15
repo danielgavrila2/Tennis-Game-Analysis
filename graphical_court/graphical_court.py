@@ -3,7 +3,9 @@ import sys
 import cv2
 import numpy as np
 import constants
-from utils import convert_meters_to_pixels_distance, convert_pixels_to_meters_distance
+from utils import (convert_meters_to_pixels_distance, convert_pixels_to_meters_distance,
+                   get_foot_position, get_closest_kp_index, get_height_of_box, measure_xy_dist,
+                   get_center_of_box, get_distance)
 sys.path.append('../')
 
 
@@ -193,3 +195,110 @@ class GraphicalCourt:
 
     def get_keypoints(self):
         return self.drawing_key_points
+
+    def get_graphical_court_coord(self, object_pos, closest_kp, closest_kp_idx, player_h_px, player_h_m):
+        # get distance in pixels
+        dist_from_kp_x_px, dist_from_kp_y_px = measure_xy_dist(
+            object_pos, closest_kp)
+
+        # convert the distance to meters
+        dist_from_kp_x_m = convert_pixels_to_meters_distance(
+            dist_from_kp_x_px,
+            player_h_m,
+            player_h_px
+        )
+
+        dist_from_kp_y_m = convert_pixels_to_meters_distance(
+            dist_from_kp_y_px,
+            player_h_m,
+            player_h_px
+        )
+
+        # convert the distance back to pixels in the graphical court
+        graph_court_dist_x_px = self.convert_meters_to_pixels(
+            dist_from_kp_x_m)
+        graph_court_dist_y_px = self.convert_meters_to_pixels(
+            dist_from_kp_y_m)
+
+        closest_kp_graph_court = (self.drawing_key_points[closest_kp_idx * 2],
+                                  self.drawing_key_points[closest_kp_idx * 2 + 1])
+
+        graph_court_player_pos = (closest_kp_graph_court[0] + graph_court_dist_x_px,
+                                  closest_kp_graph_court[1] + graph_court_dist_y_px)
+
+        return graph_court_player_pos
+
+    def convert_bounding_boxes_to_graphical_court_coord(self, player_bb, ball_bb, original_kp):
+
+        player_h = {
+            1: constants.PLAYER1_H,
+            2: constants.PLAYER2_H
+        }
+
+        output_player_bb = []
+        output_ball_bb = []
+
+        for frame_number, player_bbox in enumerate(player_bb):
+            output_player_bb_dict = {}
+
+            ball_box = ball_bb[frame_number][1]
+            ball_pos = get_center_of_box(ball_box)
+            closest_player_id_to_ball = min(player_bbox.keys(), key=lambda pid: get_distance(
+                ball_pos, get_center_of_box(player_bbox[pid])))
+
+            for player_id, bbox in player_bbox.items():
+                foot_pos = get_foot_position(bbox)
+
+                # Get the closest kp in the original frame
+                closest_kp_index = get_closest_kp_index(
+                    foot_pos, original_kp, [0, 2, 12, 13])
+                closest_kp = (original_kp[closest_kp_index * 2],
+                              original_kp[closest_kp_index * 2 + 1])
+
+                # Get the player height in pixels
+                frame_idx_min = max(0, frame_number - 20)
+                frame_idx_max = min(len(player_bb), frame_number + 50)
+                bbox_heights_in_px = [get_height_of_box(
+                    player_bb[i][player_id]) for i in range(frame_idx_min, frame_idx_max)]
+                max_player_height_in_px = max(bbox_heights_in_px)
+
+                # get the player position in the graphical court
+                graph_court_player_pos = self.get_graphical_court_coord(
+                    foot_pos,
+                    closest_kp,
+                    closest_kp_index,
+                    max_player_height_in_px,
+                    player_h[player_id]
+                )
+
+                output_player_bb_dict[player_id] = graph_court_player_pos
+
+                if closest_player_id_to_ball == player_id:
+                    # Get the closest kp in the original frame
+                    closest_kp_index = get_closest_kp_index(
+                        ball_pos, original_kp, [0, 2, 12, 13])
+                    closest_kp = (original_kp[closest_kp_index * 2],
+                                  original_kp[closest_kp_index * 2 + 1])
+
+                    graph_court_ball_pos = self.get_graphical_court_coord(
+                        ball_pos,
+                        closest_kp,
+                        closest_kp_index,
+                        max_player_height_in_px,
+                        player_h[player_id]
+                    )
+
+                    output_ball_bb.append({1: graph_court_ball_pos})
+
+            output_player_bb.append(output_player_bb_dict)
+
+        return output_player_bb, output_ball_bb
+
+    def draw_points_on_graphical_court(self, frames, positions, color=(0, 255, 0)):
+        for frame_id, frame in enumerate(frames):
+            for _, pos in positions[frame_id].items():
+                x, y = pos
+                x, y = int(x), int(y)
+                cv2.circle(frame, (x, y), 5, color, -1)
+
+        return frames
