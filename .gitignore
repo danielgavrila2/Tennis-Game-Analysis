@@ -1,0 +1,9 @@
+/.venv
+/training/runs
+/training/tennis_court_det_dataset
+/training/tennis-ball-detection-6
+/runs
+/court_line_detector/__pycache__
+/graphical_court/__pycache__
+/trackers/__pycache__
+/utils/__pycache__
