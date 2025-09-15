@@ -1,5 +1,5 @@
 from utils import (read_video, save_video, get_distance,
-                   convert_pixels_to_meters_distance, draw_player_stats)
+                   convert_pixels_to_meters_distance, draw_player_stats, TennisPlayerExtractor)
 from trackers import (PlayerTracker, BallTracker)
 from court_line_detector import CourtLineDetector
 import constants
@@ -12,8 +12,14 @@ import constants
 
 def main():
     # Read video frames
-    input_path = "input_videos\input_video.mp4"
+    input_path = r"input_videos\input_video.mp4"
     video_frames = read_video(input_path)
+
+    # Identify the players
+    name_extractor = TennisPlayerExtractor()
+    player_info = name_extractor.extract_with_bounding_boxes(
+        image_path=r"input_videos/image_captured.jpg")
+    player_names = [info['name'] for info in player_info]
 
     # Initialize player tracker and detect players in frames
     player_tracker = PlayerTracker(model_path="yolov8x")
@@ -129,7 +135,7 @@ def main():
 
     # Draw the bounding boxes on the frames
     output_video_frames = player_tracker.draw_boxes(
-        video_frames, player_detections)
+        video_frames, player_detections, player_names)
     output_video_frames = ball_tracker.draw_boxes(
         output_video_frames, ball_detections)
     output_video_frames = court_line_detector.draw_keypoints_on_frames(
@@ -144,7 +150,7 @@ def main():
 
     # Draw player stats
     output_video_frames = draw_player_stats(
-        output_video_frames, player_stats_data_df)
+        output_video_frames, player_stats_data_df, player_names)
 
     # We will display the frame number on each frame
     for i, frame in enumerate(video_frames):
@@ -152,7 +158,7 @@ def main():
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 2)
 
     # Save the processed video frames
-    save_video(output_video_frames, "output_videos\output_video.avi")
+    save_video(output_video_frames, r"output_videos\output_video.avi")
 
 
 if __name__ == "__main__":

@@ -45,7 +45,7 @@ class PlayerTracker:
 
         return player_detections
 
-    def draw_boxes(self, frames, player_detections):
+    def draw_boxes(self, frames, player_detections, player_names=None):
         output_frames = []
 
         for frame, plater_dict in zip(frames, player_detections):
@@ -53,8 +53,12 @@ class PlayerTracker:
             for track_id, box in plater_dict.items():
                 x1, y1, x2, y2 = map(int, box)
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(frame, f"PLAYER_ID: {track_id}", (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                if player_names is not None:
+                    cv2.putText(frame, player_names[track_id - 1], (x1, y1 - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                else:
+                    cv2.putText(frame, f"PLAYER_ID: {track_id}", (x1, y1 - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
             output_frames.append(frame)
 

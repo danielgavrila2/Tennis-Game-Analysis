@@ -43,9 +43,9 @@ class BallTracker:
             # Draw bounding boxes on the frame
             for track_id, box in ball_dict.items():
                 x1, y1, x2, y2 = map(int, box)
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                cv2.putText(frame, f"BALL_ID: {track_id}", (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 2)
+                cv2.putText(frame, f"Ball", (x1, y1 - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
             output_frames.append(frame)
 

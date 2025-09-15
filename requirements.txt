@@ -3,3 +3,4 @@ roboflow
 torch
 opencv-python
 pandas
+pytesseract

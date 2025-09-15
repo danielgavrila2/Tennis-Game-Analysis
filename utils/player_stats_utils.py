@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 
-def draw_player_stats(output_video_frames, player_stats):
+def draw_player_stats(output_video_frames, player_stats, player_names=None):
 
     for index, row in player_stats.iterrows():
         player_1_shot_speed = row['player_1_last_shot_speed']
@@ -25,7 +25,7 @@ def draw_player_stats(output_video_frames, player_stats):
         height = 230
 
         start_x = frame.shape[1] - 400
-        start_y = frame.shape[0] - 550
+        start_y = frame.shape[0] - 500
         end_x = start_x + width
         end_y = start_y + height
 
@@ -37,7 +37,10 @@ def draw_player_stats(output_video_frames, player_stats):
 
         output_video_frames[index] = frame
 
-        text = "     Player 1     Player 2"
+        if player_names is None:
+            text = "     Player 1     Player 2"
+        else:
+            text = f"     {player_names[0]}     {player_names[1]}"
         output_video_frames[index] = cv2.putText(output_video_frames[index], text, (
             start_x+80, start_y+30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
